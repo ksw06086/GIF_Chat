@@ -5,6 +5,8 @@ const path = require('path');
 const session = require('express-session');
 const nunjucks = require('nunjucks');
 const dotenv = require('dotenv');
+const connect = require('./schemas');
+const ColorHash = require('color-hash').default; // 어떤 값을 컬러로 바꾸어줌 
 dotenv.config();
 
 const webSocket = require('./socket');
@@ -17,6 +19,7 @@ nunjucks.configure('views', {
   express: app,
   watch: true,
 });
+connect();
 
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -33,6 +36,17 @@ app.use(session({
   },
 }));
 
+// user 테이블이 따로 없음
+// session을 통해서 ID를 만들어낼 것
+app.use((req, res, next) => {
+  // 여기서 만든 컬러가 채팅방 각각 채팅의 글자색이 될 것임
+  if(!req.session.color){ // 세션 값이 없는 경우에만 
+    const colorHash = new ColorHash();
+    req.session.color = colorHash.hex(req.sessionID); // 해당 사람이 컬러가 됨
+    console.log(req.session.color, req.sessionID);
+  }
+  next();
+});
 app.use('/', indexRouter);
 
 app.use((req, res, next) => {
@@ -53,4 +67,5 @@ const server = app.listen(app.get('port'), () => {
     console.log(app.get('port'), '번 포트에서 대기 중');
 })
 
-webSocket(server)
+// 앱을 넘기는 이유는 세션에 접근하기 위해서 색을 추출하기 위해
+webSocket(server, app);
