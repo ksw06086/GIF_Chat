@@ -9,18 +9,17 @@
 <div>
     F12를 눌러 console 탭과 network 탭을 확인하세요.
 </div>    
+<script src="/socket.io/socket.io.js"></script>
 <script>
     // 클라이언트
-    const webSocket = new WebSocket("ws://localhost:8005");
-    // 받음
-    webSocket.onopen = function() {
-        console.log('서버와 웹 소켓 연결 성공');
-    }
-    // 보냄
-    webSocket.onmessage = function() {
-        console.log(event.data);
-        webSocket.send('클라이언트에서 서버로 답장을 보냅니다.');
-    }
+    const socket = io.connect("http://localhost:8005", {
+        path: '/socket.io',
+        transports: ['websocket'], // 개발자도구 Network 부분에 풀링 삭제하고 WebSocket만 남기게 함
+    });
+    socket.on('news', (data) => {
+        console.log(data);
+        socket.emit('reply', 'Hello Node.js');
+    })
 </script>
 </body>
 </html>
