@@ -21,6 +21,6 @@ const roomSchema = new Schema({
         type: Date,
         default: Date.now,
     },
-})
+});
 
 module.exports = mongoose.model('Room', roomSchema);
